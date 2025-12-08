@@ -28,15 +28,19 @@ kubectl create secret generic gemini-api-key \
   --from-literal=api-key="$GEMINI_API_KEY" \
   --dry-run=client -o yaml | kubectl apply -f -
 
+echo "🗑️  Deleting existing deployments to force image refresh..."
+
+kubectl delete deployment weather-service packing-service travel-agent --ignore-not-found=true
+
 echo "🚀 Deploying to Kubernetes..."
 
 kubectl apply -f k8s-manifests.yaml
 
-echo "⏳ Waiting for pods to be ready..."
+echo "⏳ Waiting for deployments to be ready..."
 
-kubectl wait --for=condition=ready pod -l app=weather-service --timeout=60s
-kubectl wait --for=condition=ready pod -l app=packing-service --timeout=60s
-kubectl wait --for=condition=ready pod -l app=travel-agent --timeout=60s
+kubectl rollout status deployment/weather-service --timeout=60s
+kubectl rollout status deployment/packing-service --timeout=60s
+kubectl rollout status deployment/travel-agent --timeout=60s
 
 echo "✅ Deployment complete!"
 echo ""
