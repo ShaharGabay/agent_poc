@@ -43,39 +43,39 @@ spec:
     app: weather-service
 
 ---
-# Packing Service Deployment
+# Travel Service Deployment
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: packing-service
+  name: travel-service
   labels:
-    app: packing-service
+    app: travel-service
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: packing-service
+      app: travel-service
   template:
     metadata:
       labels:
-        app: packing-service
+        app: travel-service
     spec:
       containers:
-      - name: packing-service
-        image: packing-service:latest
+      - name: travel-service
+        image: travel-service:latest
         imagePullPolicy: Never
         ports:
         - containerPort: 8002
           name: http
 
 ---
-# Packing Service ClusterIP
+# Travel Service ClusterIP
 apiVersion: v1
 kind: Service
 metadata:
-  name: packing-service
+  name: travel-service
   labels:
-    app: packing-service
+    app: travel-service
 spec:
   type: ClusterIP
   ports:
@@ -84,7 +84,7 @@ spec:
     protocol: TCP
     name: http
   selector:
-    app: packing-service
+    app: travel-service
 
 ---
 # Agent Deployment

@@ -4,15 +4,14 @@ mcp = FastMCP("WeatherService")
 
 @mcp.tool()
 async def get_weather(location: str) -> str:
-    """Get weather for a specified location."""
-    # Simulate fetching weather data
+    """Get current weather for a location."""
     weather_data = {
-        "New York": "sunny with a temperature of 25°C",
-        "San Francisco": "foggy with a temperature of 18°C",
-        "Seattle": "rainy with a temperature of 15°C",
-        "London": "cloudy with a temperature of 12°C",
-        "Paris": "sunny with a temperature of 22°C",
-        "Tokyo": "partly cloudy with a temperature of 20°C",
+        "New York": "sunny, 25C",
+        "San Francisco": "foggy, 18C",
+        "Seattle": "rainy, 15C",
+        "London": "cloudy, 12C",
+        "Paris": "sunny, 22C",
+        "Tokyo": "partly cloudy, 20C",
     }
-    weather = weather_data.get(location, "unknown - check local forecast")
-    return f"The weather in {location} is {weather}."
+    weather = weather_data.get(location, "unknown")
+    return f"{location}: {weather}"
