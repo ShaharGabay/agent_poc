@@ -4,7 +4,8 @@ fastmcp
 httpx
 pydantic
 langchain
-langchain-google-genai
 langchain-ollama
 langchain-mcp-adapters
 mcp
+crewai
+litellm

@@ -1,10 +1,29 @@
 #!/bin/bash
 set -e
 
+# Check for required argument
+if [ -z "$1" ]; then
+    echo "Usage: $0 <langchain|crewai>"
+    echo "  langchain - Deploy with LangChain agent"
+    echo "  crewai    - Deploy with CrewAI agent"
+    exit 1
+fi
+
+AGENT_TYPE="$1"
+
+if [ "$AGENT_TYPE" != "langchain" ] && [ "$AGENT_TYPE" != "crewai" ]; then
+    echo "Error: Invalid agent type '$AGENT_TYPE'"
+    echo "Usage: $0 <langchain|crewai>"
+    exit 1
+fi
+
+AGENT_FILE="${AGENT_TYPE}_agent.py"
+echo "Deploying with $AGENT_TYPE agent ($AGENT_FILE)..."
+
 echo "Building Docker images..."
 docker build -f Dockerfile.weather -t weather-service:latest .
 docker build -f Dockerfile.travel -t travel-service:latest .
-docker build -f Dockerfile.agent -t travel-agent:latest .
+docker build -f Dockerfile.agent -t travel-agent:latest --build-arg AGENT_FILE="$AGENT_FILE" .
 
 echo "Loading images into KIND..."
 kind load docker-image weather-service:latest --name local-cluster
@@ -31,7 +50,7 @@ echo "Deploying travel agent..."
 kubectl rollout status deployment/travel-agent --timeout=60s
 
 echo ""
-echo "Deployment complete!"
+echo "Deployment complete! (using $AGENT_TYPE)"
 kubectl get pods
 
 echo ""
@@ -39,3 +58,4 @@ echo "Test with:"
 echo '  curl -X POST http://localhost:30080/ask -H "Content-Type: application/json" -d '\''{"query":"What is the weather in Tokyo?"}'\'''
 echo '  curl -X POST http://localhost:30080/ask -H "Content-Type: application/json" -d '\''{"query":"What should I see in Paris?"}'\'''
 echo '  curl -X POST http://localhost:30080/ask -H "Content-Type: application/json" -d '\''{"query":"What food should I try in London?"}'\'''
+

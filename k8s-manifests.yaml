@@ -111,12 +111,6 @@ spec:
         ports:
         - containerPort: 8000
           name: http
-        env:
-        - name: GEMINI_API_KEY
-          valueFrom:
-            secretKeyRef:
-              name: gemini-api-key
-              key: api-key
 
 ---
 # Agent NodePort Service (for external access)

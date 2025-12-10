@@ -6,11 +6,8 @@ from langchain_mcp_adapters.client import MultiServerMCPClient
 from langchain.agents import create_agent
 
 # Configuration
-LLM_PROVIDER = "ollama"  # "ollama" or "gemini"
 OLLAMA_MODEL = "llama3.2"
 OLLAMA_URL = "http://host.docker.internal:11435"
-GEMINI_API_KEY = ""  # Set your key here if using Gemini
-GEMINI_MODEL = "gemini-2.0-flash-lite"
 MCP_WEATHER_URL = "http://weather-service:8001/mcp"
 MCP_TRAVEL_URL = "http://travel-service:8002/mcp"
 LLM_TIMEOUT = 60
@@ -32,20 +29,10 @@ class TravelQuery(BaseModel):
 
 
 def create_llm():
-    """Create LLM based on configured provider."""
-    if LLM_PROVIDER == "ollama":
-        from langchain_ollama import ChatOllama
-        print(f"Using Ollama ({OLLAMA_MODEL}) at {OLLAMA_URL}")
-        return ChatOllama(model=OLLAMA_MODEL, base_url=OLLAMA_URL, temperature=0)
-    else:
-        from langchain_google_genai import ChatGoogleGenerativeAI
-        print(f"Using Gemini ({GEMINI_MODEL})")
-        return ChatGoogleGenerativeAI(
-            model=GEMINI_MODEL,
-            google_api_key=GEMINI_API_KEY,
-            temperature=0,
-            max_retries=0,
-        )
+    """Create Ollama LLM."""
+    from langchain_ollama import ChatOllama
+    print(f"Using Ollama ({OLLAMA_MODEL}) at {OLLAMA_URL}")
+    return ChatOllama(model=OLLAMA_MODEL, base_url=OLLAMA_URL, temperature=0)
 
 
 async def initialize():
@@ -63,7 +50,7 @@ async def initialize():
     tools = await mcp_client.get_tools()
     print(f"Loaded MCP tools: {[t.name for t in tools]}")
     
-    # 3. Create ReAct agent with rate limiting hook
+    # 3. Create ReAct agent
     agent = create_agent(llm, tools, system_prompt=SYSTEM_PROMPT)
     print("Agent ready")
 
@@ -81,6 +68,7 @@ app = FastAPI(title="Travel Assistant", lifespan=lifespan)
 async def health():
     return {
         "status": "healthy",
+        "framework": "langchain",
         "tools": [t.name for t in tools]
     }
 
@@ -104,7 +92,12 @@ async def ask(query: TravelQuery):
             for tc in msg.tool_calls
         ]
         
-        return {"query": query.query, "answer": answer, "tool_calls": tool_calls}
+        return {
+            "query": query.query,
+            "answer": answer,
+            "tool_calls": tool_calls,
+            "framework": "langchain"
+        }
     
     except asyncio.TimeoutError:
         return {"error": "Request timed out", "query": query.query}
@@ -115,3 +108,4 @@ async def ask(query: TravelQuery):
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
+

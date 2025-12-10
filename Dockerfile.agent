@@ -2,15 +2,16 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
+ARG AGENT_FILE=langchain_agent.py
+
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY main.py .
+COPY ${AGENT_FILE} agent.py
 
 EXPOSE 8000
 
 # Use unbuffered Python output so logs appear immediately
 ENV PYTHONUNBUFFERED=1
 
-CMD ["python", "-u", "main.py"]
-
+CMD ["python", "-u", "agent.py"]
